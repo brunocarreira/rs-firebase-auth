@@ -20,11 +20,11 @@ class FirebaseAuthenticationTokenFilter
                                        response: HttpServletResponse)
             : Authentication {
         val authToken = request.getHeader(TOKEN_HEADER)
-        if (authToken.isNullOrEmpty()) {
+        if (authToken.isNullOrEmpty() || !authToken.startsWith(TOKEN_PREFIX)) {
             throw AuthenticationCredentialsNotFoundException("Invalid auth token")
         }
 
-        return authenticationManager.authenticate(FirebaseAuthenticationToken(authToken))
+        return authenticationManager.authenticate(FirebaseAuthenticationToken(authToken.split(TOKEN_PREFIX)[1]))
     }
 
     /**
@@ -55,6 +55,7 @@ class FirebaseAuthenticationTokenFilter
     }
 
     companion object {
-        private val TOKEN_HEADER = "X-Firebase-Auth"
+        private val TOKEN_HEADER = "Authorization"
+        private val TOKEN_PREFIX = "Bearer "
     }
 }

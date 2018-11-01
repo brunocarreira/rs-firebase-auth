@@ -34,7 +34,7 @@ class FirebaseAuthenticationProvider(@Autowired var firebaseAuth: FirebaseAuth) 
 
         return try{
             val fbToken = firebaseAuth.verifyIdTokenAsync(authenticationToken.token).get()
-            FirebaseUserDetails(fbToken.uid)
+            FirebaseUserDetails(id = fbToken.uid, email = fbToken.email)
         } catch (e: InterruptedException) {
             throw SessionAuthenticationException(e.message)
         } catch (e: ExecutionException) {

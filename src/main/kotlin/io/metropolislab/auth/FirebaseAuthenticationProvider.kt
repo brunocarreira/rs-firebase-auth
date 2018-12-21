@@ -2,8 +2,6 @@ package io.metropolislab.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseToken
-import com.google.firebase.tasks.Task
-import com.google.firebase.tasks.Tasks
 import io.metropolislab.auth.model.FirebaseAuthenticationToken
 import io.metropolislab.auth.model.FirebaseUserDetails
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,16 +32,13 @@ class FirebaseAuthenticationProvider(@Autowired var firebaseAuth: FirebaseAuth) 
     override fun retrieveUser(username: String, authentication: UsernamePasswordAuthenticationToken): UserDetails {
         val authenticationToken = authentication as FirebaseAuthenticationToken
 
-        val authTask: Task<FirebaseToken> = firebaseAuth.verifyIdToken(authenticationToken.token)
-        try{
-            Tasks.await(authTask)
+        return try{
+            val fbToken = firebaseAuth.verifyIdTokenAsync(authenticationToken.token).get()
+            FirebaseUserDetails(id = fbToken.uid, email = fbToken.email ?: "")
         } catch (e: InterruptedException) {
             throw SessionAuthenticationException(e.message)
         } catch (e: ExecutionException) {
             throw SessionAuthenticationException(e.message)
         }
-
-        val token = authTask.result
-        return FirebaseUserDetails(token.uid)
     }
 }
